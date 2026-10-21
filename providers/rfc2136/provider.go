@@ -366,6 +366,8 @@ func (p *Provider) List(ctx context.Context) ([]provider.Record, error) {
 
 		// Query common record types for this hostname
 		hostnameFQDN := p.ensureFQDN(hostname)
+
+	outer:
 		for _, qtype := range []uint16{dns.TypeA, dns.TypeAAAA, dns.TypeCNAME, dns.TypeTXT, dns.TypeSRV} {
 			dnsRecords, err := p.client.Query(ctx, hostnameFQDN, qtype)
 			if err != nil {
@@ -385,7 +387,15 @@ func (p *Provider) List(ctx context.Context) ([]provider.Record, error) {
 				if err != nil {
 					continue
 				}
+
 				records = append(records, record)
+
+				// break after adding CNAME record because it can only have CNAME
+				// https://www.rfc-editor.org/info/rfc1034/#section-3.6.2
+				if r.Type == dns.TypeCNAME {
+					break outer
+				}
+
 			}
 		}
 	}

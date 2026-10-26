@@ -395,7 +395,6 @@ func (p *Provider) List(ctx context.Context) ([]provider.Record, error) {
 				if r.Type == dns.TypeCNAME {
 					break outer
 				}
-
 			}
 		}
 	}
